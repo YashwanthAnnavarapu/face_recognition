@@ -1,3 +1,4 @@
+import 'package:facerecognitionapp/Find.dart' as find;
 import 'package:flutter/material.dart';
 import 'add.dart' as add;
 
@@ -50,7 +51,9 @@ class HomePage extends StatelessWidget {
                   children: <Widget>[
                     SizedBox(height: 50),
                     new RaisedButton(
-                      onPressed: hello,
+                      onPressed: (){
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>find.New()));
+                      },
                       child: new Text("Find",style: TextStyle(fontSize: 25.0,color: Colors.white,fontFamily: 'Georgia',fontStyle: FontStyle.italic),),
                       color: Colors.purple,
                       padding: EdgeInsets.fromLTRB(120, 10, 120, 10),

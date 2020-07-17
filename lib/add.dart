@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'PickImage.dart';
 import 'HomePage.dart';
 import 'encrypt.dart';
+import 'dart:convert';
+import 'API/Call_API.dart' as api;
 
 void main()
 {
@@ -32,6 +34,7 @@ class _NewState extends State<New> {
   File image=null;
   String token='';
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   void _pickedImage(File image)
   {
     this.image=image;
@@ -61,7 +64,7 @@ class _NewState extends State<New> {
     );
   }
 
-  void add_new_person()
+  Future add_new_person() async
   {
     String date = DateTime.now().toString();
     token=createToken(date);
@@ -77,38 +80,54 @@ class _NewState extends State<New> {
       }
 
 
-      var image_url = FirebaseStorage.instance.ref().child('user_image').child(token+'.jpg');
-      image_url.putFile(image);
+      List<int> imageBytes = image.readAsBytesSync();
+      String base64Image= Base64Encoder().convert(imageBytes).toString();
+      String response=await api.upload(base64Image,"upload");
 
-      var ref=Firestore.instance.collection('Details/YLUWLI1IhtWtaOziBxex/Person').document(token);
-      ref.setData({
-        'Name': Name,
-        'Occupation': Occupation,
-        'Age': Age,
-        'Gender': Gender,
-        'image':token,
-      });
+      print(base64Image.substring(base64Image.length-5,base64Image.length));
+      print(response);
 
+      if(response.toString()=="1")
+        {
+          var image_url = FirebaseStorage.instance.ref().child('user_image').child(token+'.jpg');
+          image_url.putFile(image);
 
-//      ref.add({
-//      'Name': Name,
-//      'Occupation': Occupation,
-//      'Age': Age,
-//      'Gender': Gender,
-//      'image':token,
-//        });
-    Name='';
-    Occupation='';
-    Age='';
-    Gender='';
-    image=null;
-    token='';
-    showAlertDialog(context);
-  }
-    else
-    _scaffoldKey.currentState.showSnackBar(
-        SnackBar(content: Text('Please Fill the Form Details'),
-        backgroundColor: Colors.purple,));
+          var ref=Firestore.instance.collection('Details/YLUWLI1IhtWtaOziBxex/Person').document(token);
+          ref.setData({
+            'Name': Name,
+            'Occupation': Occupation,
+            'Age': Age,
+            'Gender': Gender,
+            'image':token,
+          });
+          Name='';
+          Occupation='';
+          Age='';
+          Gender='';
+          image=null;
+          token='';
+          showAlertDialog(context);
+        }
+      else
+        {
+          Name='';
+          Occupation='';
+          Age='';
+          Gender='';
+          image=null;
+          token='';
+
+          _scaffoldKey.currentState.showSnackBar(
+              SnackBar(content: Text(response.toString()),
+                backgroundColor: Colors.purple,));
+          return;
+        }
+    }
+    else {
+      _scaffoldKey.currentState.showSnackBar(
+          SnackBar(content: Text('Please Fill the Form Details'),
+            backgroundColor: Colors.purple,));
+    }
   }
 
   @override

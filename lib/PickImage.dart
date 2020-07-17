@@ -25,6 +25,8 @@ class _PickImageState extends State<PickImage> {
     widget.imagePickFn(_pickedImageFile);
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return new Column(
