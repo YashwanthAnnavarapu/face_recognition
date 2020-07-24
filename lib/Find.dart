@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart';
 import 'PickImage.dart';
 import 'HomePage.dart';
 import 'encrypt.dart';
@@ -27,7 +29,7 @@ class New extends StatefulWidget {
 }
 
 class _NewState extends State<New> {
-  String Name='';
+  String Name;
   String Occupation='';
   String Age='';
   String Gender='';
@@ -64,8 +66,21 @@ class _NewState extends State<New> {
     );
   }
 
-  Future find() async
+  Future firebase() async
   {
+    var document=Firestore.instance.collection("Details/YLUWLI1IhtWtaOziBxex/Person").document(token).collection(token).getDocuments();
+    document.then((querySnapshot) {
+      querySnapshot.documents.forEach((result) {
+        if(result.documentID.toString()==token) {
+          return result.data["Name"];
+        }
+      });
+    });
+  }
+
+  Future Search() async
+  {
+    String name,occupation,age,gender;
 
       if(image==null)
       {
@@ -80,28 +95,44 @@ class _NewState extends State<New> {
       String base64Image= Base64Encoder().convert(imageBytes).toString();
 //      print(base64Image.substring(base64Image.length-5,base64Image.length));
       String response=await api.search(base64Image,"find");
-      print(response);
+//      print(response);
+      token=response.toString();
 
       if(response.toString()!="3")
       {
-        token=response.toString();
-        var demo=Firestore.instance.collection("Details/YLUWLI1IhtWtaOziBxex/Person/");
-        print(demo.getDocuments());
+        var document=Firestore.instance.collection("Details/YLUWLI1IhtWtaOziBxex/Person").document(token).collection(token).getDocuments();
+        document.then((querySnapshot) {
+          querySnapshot.documents.forEach((result) {
+            String temp=result.documentID.toString();
+
+            if(temp==token) {
+              Name= result.data["Name"];
+              Occupation= result.data["Occupation"];
+              Age= result.data["Age"];
+              Gender= result.data["Gender"];
+              Navigator.push(
+                this.context,
+                MaterialPageRoute(
+                    builder: (context)=>Display(
+                        token: token,
+                        name: Name,
+                        occupation: Occupation,
+                        age: Age,
+                        gender: Gender
+                    )),);
+//            print(result.data["Name"]);
+//            print(Name+Occupation+Age+Gender);
+            }
+          });
+        });
       }
-//      else
-//      {
-//        Name='';
-//        Occupation='';
-//        Age='';
-//        Gender='';
-//        image=null;
-//        token='';
-//
-//        _scaffoldKey.currentState.showSnackBar(
-//            SnackBar(content: Text(response.toString()),
-//              backgroundColor: Colors.purple,));
-//        return;
-//      }
+      else
+      {
+        _scaffoldKey.currentState.showSnackBar(
+            SnackBar(content: Text(response.toString()),
+              backgroundColor: Colors.purple,));
+        return;
+      }
   }
 
   @override
@@ -127,38 +158,18 @@ class _NewState extends State<New> {
                   child: PickImage(_pickedImage),
                 ),
 
-
                 Padding(
-                  padding: EdgeInsets.symmetric( vertical: 16.0,horizontal: 16.0),
-                  child: TextField(
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.person),
-                      labelText: 'Name',
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.purple,
-                          )
-                      ),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-
-
-
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0,horizontal: 16.0),
+                  padding: EdgeInsets.symmetric(vertical: 50,horizontal: 16.0),
                   child: RaisedButton(
                     color: Colors.purple,
                     padding: EdgeInsets.fromLTRB(50, 10, 50, 10),
-                    child: Text('Find',
+                    child: Text('Search',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                         )
                     ),
-                    onPressed: find,
+                    onPressed: Search,
                   ),
                 ) ,
               ],
@@ -170,4 +181,125 @@ class _NewState extends State<New> {
   }
 }
 
+class Display extends StatelessWidget {
 
+  String token;
+  String name;
+  String occupation;
+  String age;
+  String gender;
+  Display({Key key, @required this.token,@required this.name,@required this.occupation,@required this.age,@required this.gender})
+      :super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    return Scaffold(
+        appBar: new AppBar(
+          title: Text("ProFile"),
+          titleSpacing: 25,
+          backgroundColor: Colors.purple,
+        ),
+        body:new Center(
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              new Container(
+                width: 200,
+                height: 250,
+//                color:Colors.black,
+                padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                child: Image.network(
+                  "https://firebasestorage.googleapis.com/v0/b/facerecognitionapp-2caa4.appspot.com/o/user_image%2F"+token+".jpg?alt=media&token=470ad3cc-aa54-4b03-b75d-00ef94c0b4d9",
+//                  loadingBuilder: new ,
+                ),
+              ),
+
+              new Container(
+                padding: EdgeInsets.symmetric(vertical: 20,horizontal: 15),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                      child: new TextField(
+                        enabled: false,
+                        decoration: new InputDecoration(
+                          labelText: name,
+                          prefixIcon: new Icon(Icons.person),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.purple,
+                            ),
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                      child: new TextField(
+                        enabled: false,
+                        decoration: new InputDecoration(
+                          labelText: occupation,
+                          prefixIcon: new Icon(Icons.business),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.purple,
+                            ),
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                      child: new TextField(
+                        enabled: false,
+                        decoration: new InputDecoration(
+                          labelText: age,
+                          prefixIcon: new Icon(Icons.date_range),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.purple,
+                            ),
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                      child: new TextField(
+                        enabled: false,
+                        decoration: new InputDecoration(
+                          labelText: gender,
+                          prefixIcon: new Icon(Icons.people),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.purple,
+                            ),
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+
+
+                  ],
+                ),
+              ),
+            ],
+          ),
+        )
+    );
+  }
+}

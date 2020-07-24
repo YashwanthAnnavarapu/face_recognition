@@ -1,15 +1,14 @@
 import 'dart:convert';
-import 'package:facerecognitionapp/api_bkp.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 import '../encrypt.dart';
 
-  Future upload(String base64,String task) async
+  Future upload(String base64,String task,String token) async
   {
-    String date = DateTime.now().toString();
-    String token = createToken(date).toString();
+//    String date = DateTime.now().toString();
+//    String token = createToken(date).toString();
 
     var response = await http.post(
       "https://test098.herokuapp.com/api",
@@ -33,8 +32,9 @@ import '../encrypt.dart';
       return "Image Consists of Multiple Faces";
     else if (statusCode == "-2")
       return "Image Does not have a person";
-    else if (statusCode == "1")
+    else if (statusCode == "1") {
       return "1";
+    }
     else if (statusCode == "2")
       return "Details are Already Captured..!";
     else
@@ -49,7 +49,7 @@ import '../encrypt.dart';
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        "token": '',
+        "token": "",
         "task": task,
         "image": base64,
       }),

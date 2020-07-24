@@ -79,20 +79,20 @@ class _NewState extends State<New> {
         return;
       }
 
+        List<int> imageBytes = image.readAsBytesSync();
+        String base64Image = Base64Encoder().convert(imageBytes).toString();
+        String response = await api.upload(base64Image, "upload",token);
+        print(base64Image.substring(base64Image.length-5,base64Image.length));
+        print(response);
 
-      List<int> imageBytes = image.readAsBytesSync();
-      String base64Image= Base64Encoder().convert(imageBytes).toString();
-      String response=await api.upload(base64Image,"upload");
 
-      print(base64Image.substring(base64Image.length-5,base64Image.length));
-      print(response);
 
       if(response.toString()=="1")
         {
           var image_url = FirebaseStorage.instance.ref().child('user_image').child(token+'.jpg');
           image_url.putFile(image);
 
-          var ref=Firestore.instance.collection('Details/YLUWLI1IhtWtaOziBxex/Person').document(token);
+          var ref=Firestore.instance.collection('Details/YLUWLI1IhtWtaOziBxex/Person').document(token).collection(token).document(token);
           ref.setData({
             'Name': Name,
             'Occupation': Occupation,

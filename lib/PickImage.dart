@@ -33,7 +33,7 @@ class _PickImageState extends State<PickImage> {
       children: [
         new Container(
           width: 200,
-          height: 200,
+          height: 250,
           decoration: new BoxDecoration(
             shape: BoxShape.rectangle,
             image: DecorationImage(
